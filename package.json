@@ -1,0 +1,26 @@
+{
+  "name": "infolark",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Daily startup and AI funding intelligence in Feishu documents",
+  "engines": { "node": ">=20.19" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/daemon.js",
+    "collect": "node --env-file-if-exists=.env src/cli.js collect",
+    "preview": "node --env-file-if-exists=.env src/cli.js preview",
+    "doctor": "node --env-file-if-exists=.env src/cli.js doctor",
+    "publish": "node --env-file-if-exists=.env src/cli.js publish",
+    "schedule:install": "node scripts/launch-agent.js install",
+    "schedule:remove": "node scripts/launch-agent.js remove",
+    "schedule:status": "node scripts/launch-agent.js status",
+    "test": "node --test test/*.test.js",
+    "check:public": "node scripts/check-public-files.js"
+  },
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "1.76.0",
+    "@mozilla/readability": "0.6.0",
+    "fast-xml-parser": "5.11.2",
+    "linkedom": "0.18.13"
+  }
+}

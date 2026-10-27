@@ -1,0 +1,333 @@
+diff --git a/README.md b/README.md
+index 7ac3c58..59dec18 100644
+--- a/README.md
++++ b/README.md
+@@ -39,6 +39,8 @@ npm start
+ - **应用与模型设置**：[http://127.0.0.1:8787/app](http://127.0.0.1:8787/app)
+ - **连接与任务状态**：[http://127.0.0.1:8787/status](http://127.0.0.1:8787/status)
+ 
++macOS 可运行 `npm run service:install` 设置后台常驻，关闭终端后仍运行；查看和停用方法见 [后台运行](docs/BACKGROUND_SERVICE.md)。
++
+ 模型设置页支持 API 地址、Key、模型、Responses/Chat Completions 和可选推理强度。保存后新任务立即使用新配置，无需重启；取消“使用我的模型配置”可回到 `.env` 默认值。密钥加密保存在本机 `data/`，不会回显到页面。Suwen 预设地址为 `https://suwen.chatfold.pro/suwen/v1`，使用者需提供自己的有效 Key。见 [模型配置](docs/MODEL_SETTINGS.md)。
+ 
+ ## PDF 浏览器扩展
+diff --git a/package.json b/package.json
+index d5caa03..3588004 100644
+--- a/package.json
++++ b/package.json
+@@ -6,6 +6,9 @@
+   "type": "module",
+   "scripts": {
+     "start": "node --env-file-if-exists=.env src/server.js",
++    "service:install": "node scripts/launch-agent.js install",
++    "service:remove": "node scripts/launch-agent.js remove",
++    "service:status": "node scripts/launch-agent.js status",
+     "doctor": "node --env-file-if-exists=.env scripts/doctor.js",
+     "extension:setup": "node --env-file-if-exists=.env scripts/setup-browser-extension.js",
+     "test": "node --test test/*.test.js",
+diff --git a/src/command-service.js b/src/command-service.js
+index 28e80af..cdd446b 100644
+--- a/src/command-service.js
++++ b/src/command-service.js
+@@ -108,7 +108,8 @@ export class CommandService {
+       if (!command.target && !input.selectedText) throw new Error("请在 /think 后写下你的想法，或先选中想讨论的内容");
+       answer = await generate("你是一起讨论想法的研究伙伴。准确理解用户观点，结合选区、文档及当前线程给出有依据的反馈；需要时指出漏洞、反例、验证方法或下一步问题。不要一味赞同，不要机械重复固定模板。区分用户的想法、文档原文和你的推测，避免把引用误当成用户已表达的观点。自然回应最新一轮，不重复总结全部历史。", `${baseContext}\n\n当前线程历史：${input.threadContext || "无"}\n\n用户的想法或追问：${command.target || "我还没有写具体观点，请围绕选区提出讨论切入点。"}`);
+     } else if (command.name === "add") {
+-      answer = await generate("把下面内容整理成适合追加到总结文档的紧凑小节：一个小标题、2–4 个信息点，默认不超过 300 字。参考现有总结，只补充本次讨论的新信息，不重复已有概述、追加内容或待办；保留观点的归属和不确定性，不将个人猜想写成论文结论。", `${baseContext}\n\n现有总结（含已追加内容和待办）：\n${input.summaryText ?? document.summaryDocument?.content ?? "尚无正文"}\n\n评论上下文：${input.threadContext || ""}\n\n需要追加的内容：${command.target || input.selectedText || "根据评论上下文整理"}`);
++      const collectionGuide = document.collectionDocument ? "这是 InfoLark 资讯阅读讨论，输出将写入长期汇总。区分原报道事实、用户观点和 AI 推断；提炼可验证、可行动的结论，不自动改成推荐投资，也不复述整篇日报。" : "";
++      answer = await generate(`把下面内容整理成适合追加到总结文档的紧凑小节：一个小标题、2–4 个信息点，默认不超过 300 字。参考现有总结，只补充本次讨论的新信息，不重复已有概述、追加内容或待办；保留观点的归属和不确定性，不将个人猜想写成原文结论。${collectionGuide}`, `${baseContext}\n\n现有总结（含已追加内容和待办）：\n${input.summaryText ?? document.collectionDocument?.content ?? document.summaryDocument?.content ?? "尚无正文"}\n\n评论上下文：${input.threadContext || ""}\n\n需要追加的内容：${command.target || input.selectedText || "根据评论上下文整理"}`);
+       result.appendix = { content: answer, createdAt: new Date().toISOString() };
+       result.mode = "document-append";
+     } else if (command.name === "compare") {
+@@ -128,7 +129,7 @@ export class CommandService {
+       answer = await generate("精简上一条回答，保留事实、关键结论、必要条件和行动项。目标缩短约一半，删掉重复与套话；只返回精简后的内容。", previousAnswer);
+     } else if (command.name === "paper") {
+       const readingCount = this.store.incrementReading(document.documentId, input.userId);
+-      answer = `当前文档：${document.title}\n${readingCount === 1 ? "首次阅读" : `第 ${readingCount} 次阅读`}（每次 /paper 记为一次阅读启动）\n总结：${document.summaryDocument?.url || "尚未创建，可用 /doc"}\nIdea 记录：${document.notes.length} 条\n高亮：${Array.isArray(document.highlights) ? document.highlights.length : 0} 处`;
++      answer = `当前文档：${document.title}\n${readingCount === 1 ? "首次阅读" : `第 ${readingCount} 次阅读`}（每次 /paper 记为一次阅读启动）\n总结：${document.collectionDocument?.url || document.summaryDocument?.url || "尚未创建，可用 /doc"}\nIdea 记录：${document.notes.length} 条\n高亮：${Array.isArray(document.highlights) ? document.highlights.length : 0} 处`;
+       result.readingCount = readingCount;
+     }
+ 
+diff --git a/src/feishu-agent.js b/src/feishu-agent.js
+index 01f8da7..9d5c7af 100644
+--- a/src/feishu-agent.js
++++ b/src/feishu-agent.js
+@@ -152,13 +152,17 @@ export class FeishuAgent {
+       if (parsed.name === "translate" && !parsed.target && fileType === "file" && ["page", "metadata"].includes(selection.kind)) {
+         throw new Error(`飞书 PDF 评论接口只返回${selection.page ? `第 ${selection.page} 页定位` : "定位信息"}，未传出你划选的原文。当前无法自动还原这个精确选区。可在同一线程使用 /trans Sec1 指定章节，或在 /trans 后附上原句。`);
+       }
+-      if (["doc", "add", "note", "highlight"].includes(parsed.name)) releaseDocument = await this.acquireDocumentLock(fileToken);
++      if (["doc", "add", "note", "highlight"].includes(parsed.name)) {
++        const sharedCollection = ["add", "note"].includes(parsed.name) && this.store.documents.get(fileToken)?.collectionDocument?.documentId;
++        releaseDocument = await this.acquireDocumentLock(sharedCollection || fileToken);
++      }
+       const document = this.store.getOrCreateDocument({ documentId: fileToken, title: this.store.watches.get(fileToken)?.title });
+-      if (["add", "note"].includes(parsed.name) && !document.summaryDocument?.documentId) {
++      const targetDocument = document.collectionDocument || document.summaryDocument;
++      if (["add", "note"].includes(parsed.name) && !targetDocument?.documentId) {
+         throw new Error("请先使用 /doc 创建这篇论文的总结文档，再追加内容或 ToDo");
+       }
+-      if (["add", "note"].includes(parsed.name) && document.summaryDocument?.status === "writing") {
+-        throw new Error(`上次总结尚未完整写入，请先检查：${document.summaryDocument.url}`);
++      if (["add", "note"].includes(parsed.name) && targetDocument?.status === "writing") {
++        throw new Error(`上次总结尚未完整写入，请先检查：${targetDocument.url}`);
+       }
+       const destination = parsed.name === "doc" ? await this.summaryDestination(fileToken, fileType, parsed.options.path) : "";
+       let sourceText = "";
+@@ -191,7 +195,7 @@ export class FeishuAgent {
+       let summaryText;
+       if (parsed.name === "add") {
+         job.phase = "读取现有总结";
+-        summaryText = await this.client.readPaper(document.summaryDocument.documentId, "docx");
++        summaryText = await this.client.readPaper(targetDocument.documentId, "docx");
+       }
+       let summaryTemplate;
+       if (parsed.name === "doc" && this.settings.feishuTemplateUrl) {
+@@ -255,10 +259,12 @@ export class FeishuAgent {
+       }
+       if (result.ok && ["add", "note"].includes(parsed.name)) {
+         job.phase = parsed.name === "note" ? "写入待办" : "追加总结内容";
+-        await this.client.appendDocument(document.summaryDocument.documentId, parsed.name === "note" ? result.note.text : result.answer, { todo: parsed.name === "note", ...(parsed.name === "add" && document.summaryDocument.ideaListBlockId ? { beforeBlockId: document.summaryDocument.ideaListBlockId } : {}) });
++        const backlink = document.collectionDocument ? `\n\n来源日报：[${document.title.replace(/[\[\]]/g, "")}](${document.feishuUrl})` : "";
++        const content = parsed.name === "note" ? `${result.note.text}${document.collectionDocument ? `（来源：${document.feishuUrl}）` : ""}` : `${result.answer}${backlink}`;
++        await this.client.appendDocument(targetDocument.documentId, content, { todo: parsed.name === "note", ...(parsed.name === "add" && targetDocument.ideaListBlockId ? { beforeBlockId: targetDocument.ideaListBlockId } : {}) });
+         if (parsed.name === "note") document.notes.push(result.note);
+         else document.appendices.push(result.appendix);
+-        answer = `${parsed.name === "note" ? "已追加 ToDo" : "已追加内容"}：${document.summaryDocument.url}\n${parsed.name === "note" ? result.note.text : result.answer}`;
++        answer = `${parsed.name === "note" ? "已追加 ToDo" : "已追加内容"}：${targetDocument.url}\n${parsed.name === "note" ? result.note.text : result.answer}`;
+       }
+     } catch (error) {
+       job.commandError = error.message;
+@@ -351,6 +357,28 @@ export class FeishuAgent {
+     return this.registerFile(file, options);
+   }
+ 
++  async attachInfoLarkDocument({ url, parentUrl }) {
++    const [source, parent] = await Promise.all([this.client.resolveFile(url), this.client.resolveFile(parentUrl)]);
++    if (source.fileType !== "docx" || parent.fileType !== "docx") throw new Error("InfoLark 日报和汇总必须是新版 Docx 文档");
++    if (source.fileToken === parent.fileToken) throw new Error("日报和汇总不能指向同一文档");
++    const [sourceContext, parentContext, blocks] = await Promise.all([
++      this.client.readDocumentContext(source.fileToken, "docx"), this.client.readDocumentContext(parent.fileToken, "docx"),
++      this.client.paginated(`/open-apis/docx/v1/documents/${parent.fileToken}/blocks`, { document_revision_id: "-1" }, "items")
++    ]);
++    const root = blocks.find(block => block.block_id === parent.fileToken);
++    const ideaList = blocks.find(block => root?.children?.includes(block.block_id) && block.heading2?.elements?.map(e=>e.text_run?.content||"").join("") === "Idea List");
++    if (!ideaList) throw new Error("汇总文档尚缺少根层级 Idea List 标题，请先由 InfoLark 初始化父文档");
++    const release = await this.acquireDocumentLock(source.fileToken);
++    try {
++      const document = this.store.getOrCreateDocument({ documentId: source.fileToken, title: sourceContext.title || source.title, feishuUrl: source.url || url });
++      if (document.collectionDocument && document.collectionDocument.documentId !== parent.fileToken) throw new Error("该日报已关联另一个汇总文档，未覆盖原关联");
++      document.collectionDocument = { documentId: parent.fileToken, url: parent.url || parentUrl, title: parentContext.title || parent.title, content: parentContext.sourceText, status: "ready", kind: "infolark-parent", ideaListBlockId: ideaList.block_id };
++      this.store.persist();
++      await this.registerFile({ ...source, title: document.title }, { recoverCore: true, source: "infolark" });
++      return { ok: true, documentId: source.fileToken, parentDocumentId: parent.fileToken };
++    } finally { release(); }
++  }
++
+   async registerFile(file, { recoverCore = false, source = "configured" } = {}) {
+     if (!["file", "docx"].includes(file.fileType)) throw new Error("当前仅支持登记 Docx 或 PDF 文件");
+     const existing = this.store.watches.get(file.fileToken);
+diff --git a/src/feishu-content.js b/src/feishu-content.js
+index 8b5bee3..8852865 100644
+--- a/src/feishu-content.js
++++ b/src/feishu-content.js
+@@ -35,12 +35,14 @@ export function parseCommentQuote(quote) {
+ 
+ function richTextElements(text) {
+   const elements = [];
+-  const pattern = /(\$[^$\n]+\$|\\\([\s\S]+?\\\)|\*\*[^*\n]+\*\*|`[^`\n]+`)/g;
++  const pattern = /\[([^\]\n]+)\]\((https:\/\/[^\s)]+)\)|(\$[^$\n]+\$|\\\([\s\S]+?\\\)|\*\*[^*\n]+\*\*|`[^`\n]+`)/g;
+   let offset = 0;
+   for (const match of text.matchAll(pattern)) {
+     if (match.index > offset) elements.push({ text_run: { content: text.slice(offset, match.index) } });
+     const value = match[0];
+-    if (value.startsWith("$")) elements.push({ equation: { content: value.slice(1, -1) } });
++    if (match[1]) elements.push({ text_run: { content: match[1], text_element_style: { link: { url: match[2] } } } });
++    else if (/^\$\s*[\d,.]+(?:[kmb]\b|\s*(?:million|billion|trillion|USD|美元|和|与|至)|\s+(?:and|versus|to)\b)/i.test(value)) elements.push({ text_run: { content: value } });
++    else if (value.startsWith("$")) elements.push({ equation: { content: value.slice(1, -1) } });
+     else if (value.startsWith("\\(")) elements.push({ equation: { content: value.slice(2, -2) } });
+     else if (value.startsWith("**")) elements.push({ text_run: { content: value.slice(2, -2), text_element_style: { bold: true } } });
+     else elements.push({ text_run: { content: value.slice(1, -1), text_element_style: { inline_code: true } } });
+diff --git a/src/server.js b/src/server.js
+index 335804a..1d67171 100644
+--- a/src/server.js
++++ b/src/server.js
+@@ -62,6 +62,14 @@ export function createApp({ settings = config, store = new MemoryStore(settings.
+           if (request.method === "POST" && path === "/bridge/v1/anchors") {
+             const input = await readBridgeJson(request);
+             json(200, await bridge.accept(input, request.headers["x-paperlark-client"] === "extension" ? "browser-extension" : "provided-web-request"));
++          } else if (request.method === "POST" && path === "/bridge/v1/infolark/documents") {
++            const input = await readBridgeJson(request);
++            if (![input.url, input.parentUrl].every(url => typeof url === "string" && url.length <= 4096)) throw new Error("日报和汇总链接无效");
++            json(200, await agent.attachInfoLarkDocument(input));
++          } else if (request.method === "GET" && path === "/bridge/v1/infolark/reader") {
++            const botOpenId = agent.botOpenId || (await client.botInfo())?.open_id;
++            if (!botOpenId) throw new Error("尚未取得 PaperLark 应用身份");
++            json(200, { ok: true, botOpenId });
+           } else if (request.method === "POST" && path === "/bridge/v1/documents") {
+             const input = await readBridgeJson(request);
+             if (typeof input.url !== "string" || input.url.length > 4096) throw new Error("文档链接无效");
+diff --git a/test/feishu-agent.test.js b/test/feishu-agent.test.js
+index 2730e97..20c1b9d 100644
+--- a/test/feishu-agent.test.js
++++ b/test/feishu-agent.test.js
+@@ -317,3 +317,35 @@ test("summary destination follows the current wiki parent rather than a stale ca
+   assert.equal(destination.parentNodeToken, "new-parent");
+   assert.equal(context.store.watches.get("paper").wikiNode.parent_node_token, "new-parent");
+ });
++
++test("InfoLark binds a readable daily document to its collection without replacing its own summary", async () => {
++  const context = fixture();
++  context.client.resolveFile = async url => ({ fileType: "docx", fileToken: url.endsWith("daily") ? "daily" : "collection", url });
++  context.client.readDocumentContext = async token => ({ title: token, sourceText: `Content ${token}` });
++  context.client.paginated = async () => [{ block_id: "collection", children: ["ideas"] }, { block_id: "ideas", heading2: { elements: [{ text_run: { content: "Idea List" } }] } }];
++  context.store.getOrCreateDocument({documentId:"daily"}).summaryDocument = {documentId:"own-summary"};
++  await context.agent.attachInfoLarkDocument({url:"https://sample.feishu.cn/docx/daily",parentUrl:"https://sample.feishu.cn/docx/collection"});
++  const document=context.store.documents.get("daily");
++  assert.equal(document.summaryDocument.documentId,"own-summary");
++  assert.equal(document.collectionDocument.documentId,"collection");
++  assert.equal(context.store.watches.get("daily").source,"infolark");
++});
++
++test("InfoLark add uses the shared parent and retains a daily source backlink", async () => {
++  const context=fixture({replies:[reply("reply1","/add 整理这条创业思路")]});
++  const document=context.store.getOrCreateDocument({documentId:"paper",title:"Daily",feishuUrl:"https://sample.feishu.cn/docx/daily"});
++  document.collectionDocument={documentId:"parent",url:"https://sample.feishu.cn/docx/parent",ideaListBlockId:"ideas"};
++  document.summaryDocument={documentId:"different-summary",url:"https://sample.feishu.cn/docx/different-summary"};
++  context.client.readPaper=async token=>token==="parent"?"Parent collected insights":"Daily source evidence";
++  const writes=[];context.client.appendDocument=async(...args)=>writes.push(args);
++  context.agent.enqueue(event());await context.agent.drain();
++  assert.equal(writes[0][0],"parent");assert.match(writes[0][1],/来源日报/);assert.match(writes[0][1],/docx\/daily/);assert.equal(writes[0][2].beforeBlockId,"ideas");
++  assert.match(context.prompts[0].userPrompt,/Parent collected insights/);assert.match(context.prompts[0].userPrompt,/InfoLark/);
++});
++
++test("InfoLark refuses to bind an inaccessible parent or the same document", async () => {
++  const context=fixture();
++  context.client.resolveFile=async()=>({fileType:"docx",fileToken:"same"});
++  await assert.rejects(context.agent.attachInfoLarkDocument({url:"https://sample.feishu.cn/docx/a",parentUrl:"https://sample.feishu.cn/docx/b"}),/同一文档/);
++  assert.equal(context.store.documents.size,0);
++});
+diff --git a/test/feishu-client.test.js b/test/feishu-client.test.js
+index 9de6c09..bd1b8ea 100644
+--- a/test/feishu-client.test.js
++++ b/test/feishu-client.test.js
+@@ -100,6 +100,11 @@ test("summary formatting writes native equations, bullets and emphasis", () => {
+   assert.equal(mathTodo.block_type, 17);
+   assert.equal(mathTodo.todo.style.done, false);
+   assert.equal(mathTodo.todo.elements[0].equation.content, "H=\\nabla^2L");
++  const linked = textBlocks("来源：[日报](https://example.feishu.cn/wiki/DailyToken)")[0].text.elements;
++  assert.equal(linked.at(-1).text_run.text_element_style.link.url, "https://example.feishu.cn/wiki/DailyToken");
++  const currency = textBlocks("$10 million and $20 million")[0].text.elements;
++  assert.equal(currency.some(element=>element.equation), false);
++  assert.equal(currency.map(element=>element.text_run.content).join(""), "$10 million and $20 million");
+ });
+ 
+ test("same wiki root accepts an empty parent token when creating a summary", async () => {
+diff --git a/scripts/launch-agent.js b/scripts/launch-agent.js
+new file mode 100644
+index 0000000..e1effe4
+--- /dev/null
++++ b/scripts/launch-agent.js
+@@ -0,0 +1,74 @@
++import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from "node:fs";
++import { homedir } from "node:os";
++import { resolve, join } from "node:path";
++import { spawnSync } from "node:child_process";
++import { fileURLToPath } from "node:url";
++import { setTimeout as delay } from "node:timers/promises";
++import { parseEnv } from "node:util";
++
++if (process.platform !== "darwin") throw new Error("此脚本用于 macOS；其他系统请使用进程管理器保持服务运行");
++const serviceName = "PaperLark";
++const label = "com.paperlark.reader";
++const entry = "src/server.js";
++const portKey = "PORT";
++const defaultPort = 8787;
++const action = process.argv[2] || "install";
++const cwd = resolve(fileURLToPath(new URL("..", import.meta.url)));
++const directory = join(homedir(), "Library/LaunchAgents");
++const file = join(directory, label + ".plist");
++const domain = "gui/" + process.getuid();
++const target = domain + "/" + label;
++const run = args => spawnSync("launchctl", args, { encoding: "utf8", timeout: 5000 });
++const existing = run(["print", target]);
++const oldPid = Number(/\bpid = (\d+)/.exec(existing.stdout || "")?.[1]) || 0;
++const alive = pid => { if (!pid) return false; try { process.kill(pid, 0); return true; } catch (error) { return error.code !== "ESRCH"; } };
++const envPath = join(cwd, ".env");
++const env = existsSync(envPath) ? parseEnv(readFileSync(envPath, "utf8")) : {};
++const port = Number(env[portKey]) || defaultPort;
++async function health() {
++  try { const response = await fetch("http://127.0.0.1:" + port + "/health", { signal: AbortSignal.timeout(1500) }); return response.ok ? await response.json() : null; } catch { return null; }
++}
++if (action === "status") {
++  const state = await health();
++  console.log(JSON.stringify({ service: serviceName, registered: existing.status === 0, pid: oldPid || undefined, reachable: Boolean(state), connection: state?.connection, subscribed: state?.subscribed, busy: state?.busy ?? Boolean(state?.jobs?.some(job => ["running", "pending"].includes(job.status))) }, null, 2));
++  process.exit();
++}
++if (!["install", "remove"].includes(action)) throw new Error("可用操作：install / remove / status");
++const current = await health();
++if (current && (current.busy || current.jobs?.some(job => ["running", "pending"].includes(job.status)))) throw new Error(serviceName + " 正在处理任务；请完成后重试，避免中断写入");
++if (action === "install" && existing.status !== 0 && current) throw new Error("该端口已有手动服务运行，请先停止旧进程，再安装后台任务");
++if (existing.status === 0) {
++  const stopped = run(["bootout", target]);
++  if (stopped.status !== 0) throw new Error("停止原后台任务失败：" + (stopped.stderr || stopped.error?.message || "未知错误").trim());
++  const deadline = Date.now() + 45000;
++  while (run(["print", target]).status === 0 || alive(oldPid)) {
++    if (Date.now() > deadline) throw new Error("旧进程仍未完全退出，未启动第二个实例；稍后重试");
++    await delay(250);
++  }
++}
++if (action === "remove") {
++  if (existsSync(file)) unlinkSync(file);
++  console.log(serviceName + " 后台任务已移除，下次登录不会自动启动；数据和配置保留。");
++  process.exit();
++}
++const escape = value => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
++mkdirSync(directory, { recursive: true });
++mkdirSync(join(cwd, "data"), { recursive: true, mode: 0o700 });
++const plist = '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict>'
++  + "<key>Label</key><string>" + label + "</string>"
++  + "<key>ProgramArguments</key><array><string>" + escape(process.execPath) + "</string><string>--env-file-if-exists=.env</string><string>" + escape(join(cwd, entry)) + "</string></array>"
++  + "<key>WorkingDirectory</key><string>" + escape(cwd) + "</string>"
++  + "<key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>30</integer>"
++  + "<key>ProcessType</key><string>Background</string><key>ExitTimeOut</key><integer>60</integer>"
++  + "<key>StandardOutPath</key><string>" + escape(join(cwd, "data/daemon.log")) + "</string>"
++  + "<key>StandardErrorPath</key><string>" + escape(join(cwd, "data/daemon-error.log")) + "</string></dict></plist>\n";
++writeFileSync(file, plist, { mode: 0o600 });
++let started;
++for (let attempt = 0; attempt < 4; attempt++) {
++  started = run(["bootstrap", domain, file]);
++  if (started.status === 0 || run(["print", target]).status === 0) break;
++  if (!/Bootstrap failed: 5/.test(started.stderr || "") || attempt === 3) throw new Error("后台任务加载失败：" + (started.stderr || started.error?.message || "未知错误").trim());
++  await delay(500 * (attempt + 1));
++}
++console.log(serviceName + " 已设为后台常驻：登录后自动启动，进程退出后由 macOS 重新启动。");
++console.log("状态地址：http://127.0.0.1:" + port);
+diff --git a/docs/BACKGROUND_SERVICE.md b/docs/BACKGROUND_SERVICE.md
+new file mode 100644
+index 0000000..9d01ae6
+--- /dev/null
++++ b/docs/BACKGROUND_SERVICE.md
+@@ -0,0 +1,22 @@
++# 后台常驻
++
++macOS 中可将 PaperLark 注册为当前用户后台任务：
++
++```bash
++npm run service:install
++npm run service:status
++```
++
++关闭终端或 Codex 不影响服务。登录当前 macOS 账号后自动启动，进程退出后会重新启动。状态页：http://127.0.0.1:8787/status 。
++
++修改 `.env` 后重新运行 `npm run service:install`。如果有任务正在处理，脚本会拒绝中断；完成后再重试。切换时等待旧实例退出，避免两个进程写同一个状态文件。
++
++停止并取消登录自启：
++
++```bash
++npm run service:remove
++```
++
++配置和历史数据仍保留。日志位于 `data/daemon.log` 和 `data/daemon-error.log`。移动项目目录或更换 Node 路径后需重新安装后台任务。
++
++本机关机、退出登录或系统休眠时不能处理评论。要在电脑离线时持续提供服务，需要迁到常驻机器。

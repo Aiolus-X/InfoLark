@@ -1,0 +1,455 @@
+{
+  "feeds": [
+    {
+      "id": "techcrunch-venture",
+      "name": "TechCrunch · Venture",
+      "url": "https://techcrunch.com/category/venture/feed/",
+      "region": "global",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "techcrunch-startups",
+      "name": "TechCrunch · Startups",
+      "url": "https://techcrunch.com/category/startups/feed/",
+      "region": "global",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "techcrunch-ai",
+      "name": "TechCrunch · AI",
+      "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "region": "global",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "crunchbase",
+      "name": "Crunchbase News",
+      "url": "https://news.crunchbase.com/feed/",
+      "region": "global",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "qbitai",
+      "name": "量子位",
+      "url": "https://www.qbitai.com/feed",
+      "region": "cn",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "tmtpost",
+      "name": "钛媒体",
+      "url": "https://www.tmtpost.com/rss.xml",
+      "region": "cn",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "leiphone",
+      "name": "雷锋网",
+      "url": "https://www.leiphone.com/feed",
+      "region": "cn",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "ithome",
+      "name": "IT之家",
+      "url": "https://www.ithome.com/rss/",
+      "region": "cn",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "sifted",
+      "name": "Sifted",
+      "url": "https://sifted.eu/feed",
+      "region": "global",
+      "priority": "core",
+      "kind": "media"
+    },
+    {
+      "id": "venturebeat",
+      "name": "VentureBeat",
+      "url": "https://venturebeat.com/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "thedecoder",
+      "name": "The Decoder",
+      "url": "https://the-decoder.com/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "siliconangle",
+      "name": "SiliconANGLE",
+      "url": "https://siliconangle.com/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "techeu",
+      "name": "Tech.eu",
+      "url": "https://tech.eu/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "eu-startups",
+      "name": "EU-Startups",
+      "url": "https://www.eu-startups.com/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "techinasia",
+      "name": "Tech in Asia",
+      "url": "https://www.techinasia.com/feed",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "dealstreetasia",
+      "name": "DealStreetAsia",
+      "url": "https://www.dealstreetasia.com/feed/",
+      "region": "global",
+      "priority": "supplement",
+      "kind": "media"
+    },
+    {
+      "id": "producthunt",
+      "name": "Product Hunt",
+      "url": "https://www.producthunt.com/feed",
+      "region": "global",
+      "priority": "core",
+      "kind": "community"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI 官方",
+      "url": "https://openai.com/news/rss.xml",
+      "region": "global",
+      "priority": "primary",
+      "kind": "company"
+    },
+    {
+      "id": "google-ai",
+      "name": "Google AI 官方",
+      "url": "https://blog.google/technology/ai/rss/",
+      "region": "global",
+      "priority": "primary",
+      "kind": "company"
+    },
+    {
+      "id": "microsoft-ai",
+      "name": "Microsoft AI 官方",
+      "url": "https://blogs.microsoft.com/ai/feed/",
+      "region": "global",
+      "priority": "primary",
+      "kind": "company"
+    },
+    {
+      "id": "nvidia",
+      "name": "NVIDIA 官方",
+      "url": "https://blogs.nvidia.com/feed/",
+      "region": "global",
+      "priority": "primary",
+      "kind": "company"
+    },
+    {
+      "id": "aws-startups",
+      "name": "AWS Startups 官方",
+      "url": "https://aws.amazon.com/blogs/startups/feed/",
+      "region": "global",
+      "priority": "primary",
+      "kind": "company"
+    },
+    {
+      "id": "a16z",
+      "name": "a16z",
+      "url": "https://a16z.com/feed/",
+      "region": "global",
+      "priority": "primary",
+      "kind": "investor"
+    },
+    {
+      "id": "v2ex-create",
+      "name": "V2EX · 分享创造",
+      "url": "https://www.v2ex.com/feed/create.xml",
+      "region": "cn",
+      "priority": "core",
+      "kind": "community",
+      "tier": "individual"
+    }
+  ],
+  "discovery": [
+    {
+      "id": "broad-cn-funding",
+      "name": "全网发现 · 中文 AI 融资",
+      "query": "(AI OR 人工智能 OR 大模型) (融资 OR 投资 OR 创业)",
+      "language": "zh"
+    },
+    {
+      "id": "broad-cn-indie",
+      "name": "全网发现 · 中文独立创业",
+      "query": "(AI OR SaaS) (独立开发 OR 小团队 OR 出海 OR 自举)",
+      "language": "zh"
+    },
+    {
+      "id": "broad-cn-startup",
+      "name": "全网发现 · 初创与成长融资",
+      "query": "(创业 OR 初创) (种子轮 OR 天使轮 OR A轮 OR B轮)",
+      "language": "zh"
+    },
+    {
+      "id": "broad-cn-business",
+      "name": "全网发现 · 企业 AI 商业化",
+      "query": "(AI OR 人工智能) (收购 OR 合作 OR 资本开支 OR 商业化)",
+      "language": "zh"
+    },
+    {
+      "id": "broad-en-funding",
+      "name": "全网发现 · 全球 AI 融资",
+      "query": "(AI OR \"artificial intelligence\") (funding OR raises OR \"seed round\" OR \"Series A\")",
+      "language": "en"
+    },
+    {
+      "id": "broad-en-indie",
+      "name": "全网发现 · 全球独立创业",
+      "query": "(AI OR SaaS) (\"indie hacker\" OR bootstrapped OR \"solo founder\")",
+      "language": "en"
+    },
+    {
+      "id": "broad-en-traction",
+      "name": "全网发现 · 创业增长",
+      "query": "startup founder customers profitability recurring revenue",
+      "language": "en"
+    },
+    {
+      "id": "broad-en-business",
+      "name": "全网发现 · 企业资本与采购",
+      "query": "AI acquisition enterprise investment capex partnership",
+      "language": "en"
+    },
+    {
+      "id": "36kr",
+      "name": "36氪",
+      "query": "site:36kr.com (AI OR 融资 OR 创业)",
+      "language": "zh"
+    },
+    {
+      "id": "cyzone",
+      "name": "创业邦",
+      "query": "site:cyzone.cn (融资 OR 创业 OR 人工智能)",
+      "language": "zh"
+    },
+    {
+      "id": "sina",
+      "name": "新浪财经",
+      "query": "site:finance.sina.com.cn (AI OR 人工智能) (融资 OR 创业 OR 收购)",
+      "language": "zh"
+    },
+    {
+      "id": "qbitai-discovery",
+      "name": "量子位 · 搜索补充",
+      "query": "site:qbitai.com (融资 OR 创业 OR 独立开发)",
+      "language": "zh"
+    },
+    {
+      "id": "information-en",
+      "name": "The Information · 公开报道与转述",
+      "query": "\"The Information\" AI startup funding acquisition",
+      "language": "en",
+      "kind": "secondary"
+    },
+    {
+      "id": "information-cn",
+      "name": "The Information · 中文转述",
+      "query": "\"The Information\" 人工智能 融资",
+      "language": "zh",
+      "kind": "secondary"
+    },
+    {
+      "id": "x-founders",
+      "name": "X/Twitter · 创始人公开内容发现",
+      "query": "site:x.com AI startup raised ARR bootstrapped",
+      "language": "en",
+      "kind": "community"
+    },
+    {
+      "id": "x-launches",
+      "name": "X/Twitter · 产品与增长公开内容发现",
+      "query": "site:twitter.com AI founder launched revenue",
+      "language": "en",
+      "kind": "community"
+    },
+    {
+      "id": "ph-discovery",
+      "name": "Product Hunt · 相关聚合",
+      "query": "\"Product Hunt\" AI founder startup launch",
+      "language": "en",
+      "kind": "community"
+    },
+    {
+      "id": "hn-discovery",
+      "name": "Hacker News · 相关聚合",
+      "query": "\"Show HN\" AI startup revenue",
+      "language": "en",
+      "kind": "community"
+    },
+    {
+      "id": "china-investors",
+      "name": "中国投资机构与官宣发现",
+      "query": "AI 融资 领投 高瓴 红杉 经纬 真格 源码",
+      "language": "zh"
+    },
+    {
+      "id": "global-press",
+      "name": "公司与投资方官宣发现",
+      "query": "AI startup announces funding round investor press release",
+      "language": "en",
+      "kind": "company"
+    },
+    {
+      "id": "indiehackers",
+      "name": "Indie Hackers · 收入与自举案例",
+      "query": "site:indiehackers.com (revenue OR ARR OR bootstrapped OR AI)",
+      "language": "en",
+      "kind": "community",
+      "tier": "individual"
+    },
+    {
+      "id": "v2ex",
+      "name": "V2EX · 独立开发与出海",
+      "query": "site:v2ex.com (AI OR 独立开发 OR 出海 OR SaaS)",
+      "language": "zh",
+      "kind": "community",
+      "tier": "individual"
+    },
+    {
+      "id": "w2solo",
+      "name": "独立开发者社区 · w2solo",
+      "query": "site:w2solo.com (AI OR 收入 OR 出海 OR 产品)",
+      "language": "zh",
+      "kind": "community",
+      "tier": "individual"
+    },
+    {
+      "id": "indie-global",
+      "name": "独立开发 · 套壳应用与垂直工具",
+      "query": "(\"AI wrapper\" OR \"vertical AI\" OR micro-SaaS) (founder OR revenue OR launch)",
+      "language": "en",
+      "kind": "community",
+      "tier": "individual"
+    },
+    {
+      "id": "itjuzi",
+      "name": "IT桔子 · 公开融资资料",
+      "query": "site:itjuzi.com (AI OR 融资 OR 人工智能)",
+      "language": "zh",
+      "tier": "startup"
+    },
+    {
+      "id": "yc",
+      "name": "YC · 最新 batch 与公司发布",
+      "query": "site:ycombinator.com (batch OR launch OR startup) AI",
+      "language": "en",
+      "kind": "company",
+      "tier": "startup"
+    },
+    {
+      "id": "jiqizhixin",
+      "name": "机器之心 · 创业报道",
+      "query": "site:jiqizhixin.com (创业 OR 融资 OR 公司)",
+      "language": "zh",
+      "tier": "startup"
+    },
+    {
+      "id": "venturebeat-discovery",
+      "name": "VentureBeat · 融资搜索补充",
+      "query": "site:venturebeat.com (funding OR raised OR startup)",
+      "language": "en",
+      "tier": "startup"
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic · 官方发布与新业务",
+      "query": "site:anthropic.com/news",
+      "language": "en",
+      "kind": "company",
+      "tier": "enterprise"
+    },
+    {
+      "id": "meta",
+      "name": "Meta · AI 与新业务",
+      "query": "(site:about.fb.com OR site:ai.meta.com) (AI OR business OR API)",
+      "language": "en",
+      "kind": "company",
+      "tier": "enterprise"
+    },
+    {
+      "id": "bytedance",
+      "name": "字节 · AI 发布与新业务",
+      "query": "(字节 OR 火山引擎 OR 豆包) (发布 OR 业务 OR API OR 定价)",
+      "language": "zh",
+      "tier": "enterprise"
+    },
+    {
+      "id": "alibaba",
+      "name": "阿里 · AI 发布与新业务",
+      "query": "(阿里 OR 通义 OR Qwen OR 阿里云) (发布 OR 业务 OR API OR 定价)",
+      "language": "zh",
+      "tier": "enterprise"
+    },
+    {
+      "id": "a16z-reports",
+      "name": "a16z · 研究报告",
+      "query": "site:a16z.com (AI OR startup OR report)",
+      "language": "en",
+      "kind": "investor",
+      "tier": "enterprise"
+    },
+    {
+      "id": "sequoia-reports",
+      "name": "Sequoia · 研究报告",
+      "query": "site:sequoiacap.com (AI OR report OR market)",
+      "language": "en",
+      "kind": "investor",
+      "tier": "enterprise"
+    },
+    {
+      "id": "hongshan",
+      "name": "红杉 / HongShan · 研究与投资观点",
+      "query": "(红杉 OR HongShan) (AI OR 人工智能 OR 报告)",
+      "language": "zh",
+      "kind": "investor",
+      "tier": "enterprise"
+    },
+    {
+      "id": "platform-api-en",
+      "name": "平台 API 重大变化 · 海外",
+      "query": "(OpenAI OR Anthropic OR Google OR Meta) API (pricing OR deprecation OR policy OR release)",
+      "language": "en",
+      "tier": "enterprise"
+    },
+    {
+      "id": "platform-api-cn",
+      "name": "平台 API 重大变化 · 国内",
+      "query": "(大模型 OR 智能体) API (定价 OR 降价 OR 下线 OR 开放)",
+      "language": "zh",
+      "tier": "enterprise"
+    }
+  ]
+}
